@@ -475,7 +475,10 @@ export default function RhymeWorld() {
                                   <ul className="space-y-2">
                                     {rhymes.perfect.map((r, i) => (
                                       <li key={i} className="p-2 bg-blue-50 rounded text-sm">
-                                        <span className="font-medium">{r.rhyme}</span>
+                                        <div className="flex items-center gap-2">
+                                          <span className="font-medium">{r.rhyme}</span>
+                                          <PronunciationButton word={r.rhyme} language={language as Language} />
+                                        </div>
                                         <span className="ml-2 text-xs text-gray-600">{r.example}</span>
                                       </li>
                                     ))}
@@ -489,7 +492,10 @@ export default function RhymeWorld() {
                                   <ul className="space-y-2">
                                     {rhymes.near.map((r, i) => (
                                       <li key={i} className="p-2 bg-purple-50 rounded text-sm">
-                                        <span className="font-medium">{r.rhyme}</span>
+                                        <div className="flex items-center gap-2">
+                                          <span className="font-medium">{r.rhyme}</span>
+                                          <PronunciationButton word={r.rhyme} language={language as Language} />
+                                        </div>
                                         <span className="ml-2 text-xs text-gray-600">{r.example}</span>
                                       </li>
                                     ))}

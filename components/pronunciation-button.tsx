@@ -161,6 +161,7 @@ export function PronunciationButton({
         onClick={isPlaying ? stopSpeaking : speakWord}
         disabled={!word.trim()}
         title={`Pronounce "${word}" in ${language}`}
+        aria-label={`Play pronunciation of "${word}" in ${language}`}
         className={`${size === "sm" ? "h-6 w-6 p-0" : ""}`}
       >
         {isPlaying ? <Loader2 className={`${iconSize} animate-spin`} /> : <Volume2 className={iconSize} />}
