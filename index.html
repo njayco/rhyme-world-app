@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multilingual Rhyme Finder</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .language-switcher {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .lang-btn {
+            padding: 8px 15px;
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9em;
+        }
+
+        .lang-btn:hover, .lang-btn.active {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+
+        .main-content {
+            padding: 40px;
+        }
+
+        .search-section {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            border: 1px solid #e9ecef;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 20px;
+            align-items: end;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        input[type="text"], select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="text"]:focus, select:focus {
+            outline: none;
+            border-color: #4facfe;
+            box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
+        }
+
+        .search-btn {
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 120px;
+        }
+
+        .search-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(79, 172, 254, 0.4);
+        }
+
+        .search-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .results-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .results-section {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .results-header {
+            background: #f8f9fa;
+            padding: 20px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .results-header h3 {
+            color: #495057;
+            margin-bottom: 5px;
+        }
+
+        .results-header .subtitle {
+            color: #6c757d;
+            font-size: 0.9em;
+        }
+
+        .results-content {
+            padding: 20px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .rhyme-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #4facfe;
+            transition: all 0.3s ease;
+        }
+
+        .rhyme-item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+
+        .rhyme-word {
+            font-weight: 600;
+            color: #495057;
+            font-size: 1.1em;
+        }
+
+        .rhyme-details {
+            font-size: 0.85em;
+            color: #6c757d;
+            margin-top: 3px;
+        }
+
+        .rhyme-score {
+            background: #4facfe;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: 600;
+        }
+
+        .translation {
+            font-style: italic;
+            color: #28a745;
+            margin-top: 3px;
+            font-size: 0.9em;
+        }
+
+        .input-analysis {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+
+        .input-analysis h3 {
+            margin-bottom: 15px;
+        }
+
+        .analysis-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .analysis-item {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .analysis-label {
+            font-size: 0.9em;
+            opacity: 0.8;
+            margin-bottom: 5px;
+        }
+
+        .analysis-value {
+            font-size: 1.1em;
+            font-weight: 600;
+        }
+
+        .cross-language-section {
+            grid-column: 1 / -1;
+            margin-top: 20px;
+        }
+
+        .language-group {
+            margin-bottom: 25px;
+        }
+
+        .language-group h4 {
+            color: #495057;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .no-results {
+            text-align: center;
+            color: #6c757d;
+            font-style: italic;
+            padding: 40px 20px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px 20px;
+            color: #6c757d;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #4facfe;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #f5c6cb;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 10px;
+            }
+
+            .header {
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .main-content {
+                padding: 20px;
+            }
+
+            .form-row {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .results-container {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .language-switcher {
+                position: static;
+                justify-content: center;
+                margin-top: 15px;
+            }
+
+            .analysis-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="language-switcher">
+                <button class="lang-btn active" data-lang="english">🇺🇸 EN</button>
+                <button class="lang-btn" data-lang="spanish">🇪🇸 ES</button>
+                <button class="lang-btn" data-lang="french">🇫🇷 FR</button>
+            </div>
+            <h1 id="main-title">Multilingual Rhyme Finder</h1>
+            <p id="main-subtitle">Discover perfect and slant rhymes across English, Spanish, and French</p>
+        </div>
+
+        <div class="main-content">
+            <div class="search-section">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="word-input" id="word-label">Enter a word to find rhymes:</label>
+                        <input type="text" id="word-input" placeholder="e.g., love, amor, amour">
+                    </div>
+                    <div class="form-group">
+                        <label for="language-select" id="language-label">Select language:</label>
+                        <select id="language-select">
+                            <option value="english">🇺🇸 English</option>
+                            <option value="spanish">🇪🇸 Spanish</option>
+                            <option value="french">🇫🇷 French</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <button id="search-btn" class="search-btn">Find Rhymes</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="input-analysis" class="input-analysis" style="display: none;">
+                <h3 id="analysis-title">Input Analysis</h3>
+                <div class="analysis-grid">
+                    <div class="analysis-item">
+                        <div class="analysis-label" id="word-label-analysis">Word</div>
+                        <div class="analysis-value" id="analysis-word"></div>
+                    </div>
+                    <div class="analysis-item">
+                        <div class="analysis-label" id="phonetic-label">Phonetic</div>
+                        <div class="analysis-value" id="analysis-phonetic"></div>
+                    </div>
+                    <div class="analysis-item">
+                        <div class="analysis-label" id="suffix-label">Rhyming Suffix</div>
+                        <div class="analysis-value" id="analysis-suffix"></div>
+                    </div>
+                    <div class="analysis-item">
+                        <div class="analysis-label" id="syllables-label">Syllables</div>
+                        <div class="analysis-value" id="analysis-syllables"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="results-container" class="results-container" style="display: none;">
+                <div class="results-section">
+                    <div class="results-header">
+                        <h3 id="perfect-rhymes-title">Perfect Rhymes</h3>
+                        <div class="subtitle" id="perfect-rhymes-subtitle">Exact phonetic matches</div>
+                    </div>
+                    <div class="results-content" id="perfect-rhymes-content">
+                        <div class="no-results" id="no-perfect-rhymes">No perfect rhymes found</div>
+                    </div>
+                </div>
+
+                <div class="results-section">
+                    <div class="results-header">
+                        <h3 id="slant-rhymes-title">Slant Rhymes</h3>
+                        <div class="subtitle" id="slant-rhymes-subtitle">Similar phonetic patterns</div>
+                    </div>
+                    <div class="results-content" id="slant-rhymes-content">
+                        <div class="no-results" id="no-slant-rhymes">No slant rhymes found</div>
+                    </div>
+                </div>
+
+                <div class="results-section cross-language-section">
+                    <div class="results-header">
+                        <h3 id="cross-language-title">Cross-Language Rhymes</h3>
+                        <div class="subtitle" id="cross-language-subtitle">Rhymes in other languages</div>
+                    </div>
+                    <div class="results-content" id="cross-language-content">
+                        <div class="no-results" id="no-cross-language">No cross-language rhymes found</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="scripts/rhyme-algorithm.js"></script>
+    <script>
+        // Initialize the rhyme engine
+        const rhymeEngine = new MultilingualRhymeEngine();
+        let currentUILanguage = 'english';
+
+        // UI translations
+        const uiTexts = {
+            english: {
+                'main-title': 'Multilingual Rhyme Finder',
+                'main-subtitle': 'Discover perfect and slant rhymes across English, Spanish, and French',
+                'word-label': 'Enter a word to find rhymes:',
+                'language-label': 'Select language:',
+                'search-btn': 'Find Rhymes',
+                'analysis-title': 'Input Analysis',
+                'word-label-analysis': 'Word',
+                'phonetic-label': 'Phonetic',
+                'suffix-label': 'Rhyming Suffix',
+                'syllables-label': 'Syllables',
+                'perfect-rhymes-title': 'Perfect Rhymes',
+                'perfect-rhymes-subtitle': 'Exact phonetic matches',
+                'slant-rhymes-title': 'Slant Rhymes',
+                'slant-rhymes-subtitle': 'Similar phonetic patterns',
+                'cross-language-title': 'Cross-Language Rhymes',
+                'cross-language-subtitle': 'Rhymes in other languages',
+                'no-perfect-rhymes': 'No perfect rhymes found',
+                'no-slant-rhymes': 'No slant rhymes found',
+                'no-cross-language': 'No cross-language rhymes found',
+                'syllables': 'syllables',
+                'searching': 'Searching for rhymes...'
+            },
+            spanish: {
+                'main-title': 'Buscador de Rimas Multilingüe',
+                'main-subtitle': 'Descubre rimas perfectas y consonantes en inglés, español y francés',
+                'word-label': 'Ingresa una palabra para encontrar rimas:',
+                'language-label': 'Selecciona idioma:',
+                'search-btn': 'Buscar Rimas',
+                'analysis-title': 'Análisis de Entrada',
+                'word-label-analysis': 'Palabra',
+                'phonetic-label': 'Fonética',
+                'suffix-label': 'Sufijo Rimante',
+                'syllables-label': 'Sílabas',
+                'perfect-rhymes-title': 'Rimas Perfectas',
+                'perfect-rhymes-subtitle': 'Coincidencias fonéticas exactas',
+                'slant-rhymes-title': 'Rimas Consonantes',
+                'slant-rhymes-subtitle': 'Patrones fonéticos similares',
+                'cross-language-title': 'Rimas Entre Idiomas',
+                'cross-language-subtitle': 'Rimas en otros idiomas',
+                'no-perfect-rhymes': 'No se encontraron rimas perfectas',
+                'no-slant-rhymes': 'No se encontraron rimas consonantes',
+                'no-cross-language': 'No se encontraron rimas entre idiomas',
+                'syllables': 'sílabas',
+                'searching': 'Buscando rimas...'
+            },
+            french: {
+                'main-title': 'Chercheur de Rimes Multilingue',
+                'main-subtitle': 'Découvrez des rimes parfaites et approximatives en anglais, espagnol et français',
+                'word-label': 'Entrez un mot pour trouver des rimes:',
+                'language-label': 'Sélectionnez la langue:',
+                'search-btn': 'Trouver des Rimes',
+                'analysis-title': 'Analyse d\'Entrée',
+                'word-label-analysis': 'Mot',
+                'phonetic-label': 'Phonétique',
+                'suffix-label': 'Suffixe Rimant',
+                'syllables-label': 'Syllabes',
+                'perfect-rhymes-title': 'Rimes Parfaites',
+                'perfect-rhymes-subtitle': 'Correspondances phonétiques exactes',
+                'slant-rhymes-title': 'Rimes Approximatives',
+                'slant-rhymes-subtitle': 'Motifs phonétiques similaires',
+                'cross-language-title': 'Rimes Inter-Langues',
+                'cross-language-subtitle': 'Rimes dans d\'autres langues',
+                'no-perfect-rhymes': 'Aucune rime parfaite trouvée',
+                'no-slant-rhymes': 'Aucune rime approximative trouvée',
+                'no-cross-language': 'Aucune rime inter-langue trouvée',
+                'syllables': 'syllabes',
+                'searching': 'Recherche de rimes...'
+            }
+        };
+
+        // Update UI text based on current language
+        function updateUILanguage(language) {
+            currentUILanguage = language;
+            rhymeEngine.setLanguage(language);
+            
+            const texts = uiTexts[language];
+            for (const [id, text] of Object.entries(texts)) {
+                const element = document.getElementById(id);
+                if (element) {
+                    if (element.tagName === 'INPUT') {
+                        element.placeholder = text;
+                    } else {
+                        element.textContent = text;
+                    }
+                }
+            }
+        }
+
+        // Language switcher functionality
+        document.querySelectorAll('.lang-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                updateUILanguage(btn.dataset.lang);
+            });
+        });
+
+        // Search functionality
+        document.getElementById('search-btn').addEventListener('click', performSearch);
+        document.getElementById('word-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                performSearch();
+            }
+        });
+
+        function performSearch() {
+            const word = document.getElementById('word-input').value.trim();
+            const language = document.getElementById('language-select').value;
+            
+            if (!word) {
+                alert('Please enter a word to search for rhymes.');
+                return;
+            }
+
+            // Show loading state
+            showLoading();
+            
+            // Simulate async operation
+            setTimeout(() => {
+                try {
+                    const results = rhymeEngine.findAllRhymes(word, language);
+                    displayResults(results, word, language);
+                } catch (error) {
+                    showError('An error occurred while finding rhymes. Please try again.');
+                    console.error('Search error:', error);
+                }
+            }, 500);
+        }
+
+        function showLoading() {
+            const searchBtn = document.getElementById('search-btn');
+            searchBtn.disabled = true;
+            searchBtn.innerHTML = '<div class="spinner"></div>' + uiTexts[currentUILanguage]['searching'];
+            
+            document.getElementById('input-analysis').style.display = 'none';
+            document.getElementById('results-container').style.display = 'none';
+        }
+
+        function showError(message) {
+            const searchBtn = document.getElementById('search-btn');
+            searchBtn.disabled = false;
+            searchBtn.textContent = uiTexts[currentUILanguage]['search-btn'];
+            
+            // Show error message
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error';
+            errorDiv.textContent = message;
+            
+            const mainContent = document.querySelector('.main-content');
+            const existingError = mainContent.querySelector('.error');
+            if (existingError) {
+                existingError.remove();
+            }
+            
+            mainContent.insertBefore(errorDiv, mainContent.firstChild);
+            
+            setTimeout(() => {
+                errorDiv.remove();
+            }, 5000);
+        }
+
+        function displayResults(results, word, language) {
+            const searchBtn = document.getElementById('search-btn');
+            searchBtn.disabled = false;
+            searchBtn.textContent = uiTexts[currentUILanguage]['search-btn'];
+            
+            // Remove any existing error messages
+            const existingError = document.querySelector('.error');
+            if (existingError) {
+                existingError.remove();
+            }
+            
+            // Show input analysis
+            displayInputAnalysis(results.inputAnalysis);
+            
+            // Show results
+            displayRhymeResults(results.sameLanguage, results.crossLanguage, language);
+            
+            document.getElementById('input-analysis').style.display = 'block';
+            document.getElementById('results-container').style.display = 'grid';
+        }
+
+        function displayInputAnalysis(analysis) {
+            document.getElementById('analysis-word').textContent = analysis.word;
+            document.getElementById('analysis-phonetic').textContent = analysis.phonetic;
+            document.getElementById('analysis-suffix').textContent = analysis.suffix;
+            document.getElementById('analysis-syllables').textContent = analysis.syllables;
+        }
+
+        function displayRhymeResults(sameLanguage, crossLanguage, language) {
+            // Display perfect rhymes
+            displayRhymeList(sameLanguage.perfect, 'perfect-rhymes-content', 'no-perfect-rhymes');
+            
+            // Display slant rhymes
+            displayRhymeList(sameLanguage.slant, 'slant-rhymes-content', 'no-slant-rhymes');
+            
+            // Display cross-language rhymes
+            displayCrossLanguageRhymes(crossLanguage);
+        }
+
+        function displayRhymeList(rhymes, containerId, noResultsId) {
+            const container = document.getElementById(containerId);
+            const noResults = document.getElementById(noResultsId);
+            
+            if (rhymes.length === 0) {
+                container.innerHTML = '';
+                container.appendChild(noResults);
+                return;
+            }
+            
+            container.innerHTML = '';
+            rhymes.slice(0, 10).forEach(rhyme => {
+                const rhymeItem = createRhymeItem(rhyme);
+                container.appendChild(rhymeItem);
+            });
+        }
+
+        function createRhymeItem(rhyme) {
+            const item = document.createElement('div');
+            item.className = 'rhyme-item';
+            
+            const leftSide = document.createElement('div');
+            
+            const wordDiv = document.createElement('div');
+            wordDiv.className = 'rhyme-word';
+            wordDiv.textContent = rhyme.word;
+            leftSide.appendChild(wordDiv);
+            
+            const detailsDiv = document.createElement('div');
+            detailsDiv.className = 'rhyme-details';
+            detailsDiv.textContent = `${rhyme.syllables} ${uiTexts[currentUILanguage]['syllables']}`;
+            leftSide.appendChild(detailsDiv);
+            
+            if (rhyme.translation) {
+                const translationDiv = document.createElement('div');
+                translationDiv.className = 'translation';
+                translationDiv.textContent = Object.values(rhyme.translation).join(', ');
+                leftSide.appendChild(translationDiv);
+            }
+            
+            const scoreDiv = document.createElement('div');
+            scoreDiv.className = 'rhyme-score';
+            scoreDiv.textContent = `${(rhyme.similarity * 100).toFixed(1)}%`;
+            
+            item.appendChild(leftSide);
+            item.appendChild(scoreDiv);
+            
+            return item;
+        }
+
+        function displayCrossLanguageRhymes(crossLanguage) {
+            const container = document.getElementById('cross-language-content');
+            const noResults = document.getElementById('no-cross-language');
+            
+            if (Object.keys(crossLanguage).length === 0) {
+                container.innerHTML = '';
+                container.appendChild(noResults);
+                return;
+            }
+            
+            container.innerHTML = '';
+            
+            for (const [targetLang, rhymes] of Object.entries(crossLanguage)) {
+                const languageGroup = document.createElement('div');
+                languageGroup.className = 'language-group';
+                
+                const header = document.createElement('h4');
+                const flags = { english: '🇺🇸', spanish: '🇪🇸', french: '🇫🇷' };
+                header.textContent = `${flags[targetLang]} ${targetLang.charAt(0).toUpperCase() + targetLang.slice(1)}`;
+                languageGroup.appendChild(header);
+                
+                if (rhymes.perfect.length > 0) {
+                    const perfectHeader = document.createElement('h5');
+                    perfectHeader.textContent = uiTexts[currentUILanguage]['perfect-rhymes-title'];
+                    perfectHeader.style.marginBottom = '10px';
+                    perfectHeader.style.color = '#495057';
+                    languageGroup.appendChild(perfectHeader);
+                    
+                    rhymes.perfect.slice(0, 5).forEach(rhyme => {
+                        const rhymeItem = createRhymeItem(rhyme);
+                        languageGroup.appendChild(rhymeItem);
+                    });
+                }
+                
+                if (rhymes.slant.length > 0) {
+                    const slantHeader = document.createElement('h5');
+                    slantHeader.textContent = uiTexts[currentUILanguage]['slant-rhymes-title'];
+                    slantHeader.style.marginTop = '15px';
+                    slantHeader.style.marginBottom = '10px';
+                    slantHeader.style.color = '#495057';
+                    languageGroup.appendChild(slantHeader);
+                    
+                    rhymes.slant.slice(0, 5).forEach(rhyme => {
+                        const rhymeItem = createRhymeItem(rhyme);
+                        languageGroup.appendChild(rhymeItem);
+                    });
+                }
+                
+                container.appendChild(languageGroup);
+            }
+        }
+
+        // Initialize with default language
+        updateUILanguage('english');
+    </script>
+</body>
+</html>
